@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>UAAR Info Agent</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <div class="page-wrapper">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="logo-area">
+                    <div class="logo-icon">🎓</div>
+                    <div>
+                        <div class="logo-title">UAAR Info Agent</div>
+                        <div class="logo-sub">PMAS Arid Agriculture University Rawalpindi &nbsp;|&nbsp; Powered by Naive Bayes</div>
+                    </div>
+                </div>
+                <div class="status-dot" title="Agent is online">
+                    <span class="dot"></span> Online
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <main class="chat-container" id="chat-container">
+
+            <div class="message bot-message">
+                <div class="avatar bot-avatar">🤖</div>
+                <div class="bubble bot-bubble">
+                    <p>Assalam-o-Alaikum! 👋 Welcome to the <strong>UAAR Info Agent</strong>.</p>
+                    <p>I can help you with:</p>
+                    <ul>
+                        <li>📅 Admissions dates &amp; deadlines</li>
+                        <li>✅ Eligibility criteria for all faculties</li>
+                        <li>📝 Entry test schedule &amp; syllabus</li>
+                        <li>👩‍🏫 Faculty member information</li>
+                        <li>🏫 Departments &amp; programs</li>
+                        <li>🎓 Scholarships &amp; facilities</li>
+                        <li>📞 Contact information</li>
+                    </ul>
+                    <p>Type your question below to get started!</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Suggestions Bar -->
+        <div class="suggestions-bar" id="suggestions-bar" style="display:none;">
+            <div class="suggestions-label">Related questions:</div>
+            <div class="suggestions-list" id="suggestions-list"></div>
+        </div>
+
+        <!-- Input Area -->
+        <footer class="input-area">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    id="user-input"
+                    placeholder="Ask about admissions, faculty, entry test, scholarships..."
+                    autocomplete="off"
+                    maxlength="300"
+                />
+                <button id="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+            <div class="quick-btns">
+                <button class="quick-btn" onclick="setInput('How do I apply for admission?')">Admissions</button>
+                <button class="quick-btn" onclick="setInput('When is the entry test?')">Entry Test</button>
+                <button class="quick-btn" onclick="setInput('What scholarships are available?')">Scholarships</button>
+                <button class="quick-btn" onclick="setInput('What facilities does UAAR have?')">Facilities</button>
+                <button class="quick-btn" onclick="setInput('Who is the Vice Chancellor?')">Contact</button>
+                <button class="quick-btn" onclick="setInput('Can I do PhD at UAAR?')">Research</button>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        const chatContainer  = document.getElementById("chat-container");
+        const userInput      = document.getElementById("user-input");
+        const suggestionsBar = document.getElementById("suggestions-bar");
+        const suggestionsList= document.getElementById("suggestions-list");
+
+        userInput.addEventListener("keydown", e => { if (e.key === "Enter") sendMessage(); });
+
+        function setInput(text) {
+            userInput.value = text;
+            userInput.focus();
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            appendMessage("user", message);
+            userInput.value = "";
+            suggestionsBar.style.display = "none";
+            showTyping();
+
+            fetch("/ask", {
+                method : "POST",
+                headers: { "Content-Type": "application/json" },
+                body   : JSON.stringify({ message }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                removeTyping();
+                appendMessage("bot", data.answer, data.intent, data.nb_conf, data.cos_sim);
+                if (data.suggestions && data.suggestions.length > 0 &&
+                    !["greet","farewell","empty"].includes(data.intent)) {
+                    showSuggestions(data.suggestions);
+                }
+            })
+            .catch(() => {
+                removeTyping();
+                appendMessage("bot", "Sorry, something went wrong. Please try again.");
+            });
+        }
+
+        function appendMessage(role, text, intent, nbConf, cosSim) {
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("message", role === "user" ? "user-message" : "bot-message");
+
+            const avatar = document.createElement("div");
+            avatar.classList.add("avatar", role === "user" ? "user-avatar" : "bot-avatar");
+            avatar.textContent = role === "user" ? "👤" : "🤖";
+
+            const bubble = document.createElement("div");
+            bubble.classList.add("bubble", role === "user" ? "user-bubble" : "bot-bubble");
+            bubble.innerHTML = formatText(text);
+
+            // ML info badge (only for bot replies with a detected intent)
+            if (intent && !["empty","greet","farewell"].includes(intent)) {
+                const meta = document.createElement("div");
+                meta.classList.add("ml-meta");
+
+                const badge = document.createElement("span");
+                badge.classList.add("intent-badge");
+                badge.textContent = intent.replace(/_/g," ");
+
+                meta.appendChild(badge);
+
+                if (nbConf !== undefined) {
+                    const conf = document.createElement("span");
+                    conf.classList.add("conf-pill");
+                    conf.textContent = `NB: ${(nbConf * 100).toFixed(0)}%`;
+                    meta.appendChild(conf);
+                }
+                if (cosSim !== undefined) {
+                    const sim = document.createElement("span");
+                    sim.classList.add("sim-pill");
+                    sim.textContent = `Sim: ${(cosSim * 100).toFixed(0)}%`;
+                    meta.appendChild(sim);
+                }
+
+                bubble.appendChild(meta);
+            }
+
+            if (role === "user") {
+                wrapper.appendChild(bubble);
+                wrapper.appendChild(avatar);
+            } else {
+                wrapper.appendChild(avatar);
+                wrapper.appendChild(bubble);
+            }
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function formatText(text) {
+            text = text.replace(/(https?:\/\/[^\s,]+)/g,
+                '<a href="$1" target="_blank" rel="noopener">$1</a>');
+            return text.replace(/\n/g, "<br>");
+        }
+
+        function showTyping() {
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("message","bot-message");
+            wrapper.id = "typing-indicator";
+            const avatar = document.createElement("div");
+            avatar.classList.add("avatar","bot-avatar");
+            avatar.textContent = "🤖";
+            const bubble = document.createElement("div");
+            bubble.classList.add("bubble","bot-bubble","typing-bubble");
+            bubble.innerHTML = '<span class="dot-flashing"></span>';
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(bubble);
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById("typing-indicator");
+            if (el) el.remove();
+        }
+
+        function showSuggestions(suggestions) {
+            suggestionsList.innerHTML = "";
+            suggestions.forEach(s => {
+                const btn = document.createElement("button");
+                btn.classList.add("suggestion-chip");
+                btn.textContent = s;
+                btn.onclick = () => { setInput(s); sendMessage(); };
+                suggestionsList.appendChild(btn);
+            });
+            suggestionsBar.style.display = "flex";
+        }
+    </script>
+</body>
+</html>

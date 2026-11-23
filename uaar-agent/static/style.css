@@ -1,0 +1,206 @@
+/* ============================================================
+   UAAR Info Agent — Stylesheet
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f4f8;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-wrapper {
+    width: 100%;
+    max-width: 840px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+
+/* --- Header --- */
+.header {
+    background: linear-gradient(135deg, #1a5c2a 0%, #2e7d3e 100%);
+    color: #fff;
+    padding: 14px 20px;
+    flex-shrink: 0;
+}
+.header-inner { display: flex; align-items: center; justify-content: space-between; }
+.logo-area    { display: flex; align-items: center; gap: 12px; }
+.logo-icon    { font-size: 30px; }
+.logo-title   { font-size: 17px; font-weight: 700; }
+.logo-sub     { font-size: 11.5px; opacity: .80; margin-top: 2px; }
+.status-dot   { display: flex; align-items: center; gap: 6px; font-size: 13px; opacity: .9; }
+.dot {
+    display: inline-block; width: 8px; height: 8px;
+    background: #7dffaa; border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* --- Chat Container --- */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #f5f7fa;
+}
+
+/* --- Messages --- */
+.message { display: flex; align-items: flex-end; gap: 10px; max-width: 92%; }
+.bot-message  { align-self: flex-start; }
+.user-message { align-self: flex-end; flex-direction: row-reverse; }
+
+.avatar {
+    font-size: 20px; flex-shrink: 0;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: #e8f5ec;
+}
+.user-avatar { background: #dde8ff; }
+
+.bubble {
+    padding: 11px 15px;
+    border-radius: 18px;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+.bot-bubble {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    color: #222;
+}
+.user-bubble {
+    background: linear-gradient(135deg, #1a5c2a, #2e7d3e);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.bot-bubble p  { margin-bottom: 5px; }
+.bot-bubble ul { padding-left: 18px; margin: 5px 0; }
+.bot-bubble li { margin-bottom: 3px; }
+.bot-bubble a  { color: #1a5c2a; word-break: break-all; }
+.user-bubble a { color: #b2ffcc; }
+
+/* ML Metadata row */
+.ml-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 9px;
+    align-items: center;
+}
+.intent-badge {
+    padding: 2px 9px;
+    background: #eaf4ed;
+    color: #1a5c2a;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+.conf-pill, .sim-pill {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.conf-pill { background: #fff3cd; color: #856404; }
+.sim-pill  { background: #d1ecf1; color: #0c5460; }
+
+/* Typing */
+.typing-bubble { padding: 14px 18px; }
+.dot-flashing {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%; background: #aaa;
+    animation: df 1s infinite alternate;
+    position: relative;
+}
+.dot-flashing::before, .dot-flashing::after {
+    content:""; display: inline-block; position: absolute;
+    top: 0; width: 8px; height: 8px; border-radius: 50%; background: #aaa;
+}
+.dot-flashing::before { left:-14px; animation: df 1s .33s infinite alternate; }
+.dot-flashing::after  { left: 14px; animation: df 1s .66s infinite alternate; }
+@keyframes df { 0%{background:#ccc} 100%{background:#555} }
+
+/* --- Suggestions Bar --- */
+.suggestions-bar {
+    padding: 8px 16px;
+    background: #f0f4f8;
+    border-top: 1px solid #dde3ea;
+    flex-direction: column; gap: 6px; flex-shrink: 0;
+}
+.suggestions-label { font-size: 11.5px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+.suggestions-list  { display: flex; flex-wrap: wrap; gap: 6px; }
+.suggestion-chip {
+    padding: 5px 12px;
+    background: #fff;
+    border: 1px solid #c2d4c8;
+    border-radius: 20px;
+    font-size: 13px; color: #1a5c2a; cursor: pointer;
+    transition: all .2s; text-align: left;
+}
+.suggestion-chip:hover { background: #1a5c2a; color: #fff; border-color: #1a5c2a; }
+
+/* --- Input Area --- */
+.input-area {
+    background: #fff;
+    padding: 12px 16px 14px;
+    border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+.input-wrapper { display: flex; gap: 8px; margin-bottom: 10px; }
+#user-input {
+    flex: 1;
+    padding: 11px 16px;
+    border: 1.5px solid #c8d8cc;
+    border-radius: 24px;
+    font-size: 14.5px;
+    outline: none;
+    background: #f9fbf9;
+    transition: border-color .2s;
+}
+#user-input:focus { border-color: #1a5c2a; background: #fff; }
+#send-btn {
+    padding: 11px 22px;
+    background: linear-gradient(135deg, #1a5c2a, #2e7d3e);
+    color: #fff;
+    border: none; border-radius: 24px;
+    font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: opacity .2s, transform .1s;
+}
+#send-btn:hover  { opacity: .90; }
+#send-btn:active { transform: scale(.97); }
+
+.quick-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick-btn {
+    padding: 5px 13px;
+    background: #eaf4ed;
+    border: 1px solid #b8d8c0;
+    border-radius: 20px;
+    font-size: 13px; color: #1a5c2a; cursor: pointer;
+    transition: all .2s; font-weight: 500;
+}
+.quick-btn:hover { background: #1a5c2a; color: #fff; border-color: #1a5c2a; }
+
+/* Scrollbar */
+.chat-container::-webkit-scrollbar       { width: 5px; }
+.chat-container::-webkit-scrollbar-track { background: transparent; }
+.chat-container::-webkit-scrollbar-thumb { background: #c5d8ca; border-radius: 10px; }
+
+@media (max-width: 600px) {
+    .logo-sub { display: none; }
+    .quick-btn { font-size: 12px; padding: 4px 10px; }
+}
